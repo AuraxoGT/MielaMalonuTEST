@@ -1019,16 +1019,14 @@ document.head.insertAdjacentHTML('beforeend', `
             return false;
         }
         
-        // Validate toggles and related text
-        if (!elements.pcInput.value.trim()) {
-            showErrorMessage("❌ Prašome atsakyti į klausimą dėl PC check");
-            return false;
-        }
-        
-        if (!elements.ispInput.value.trim()) {
-            showErrorMessage("❌ Prašome atsakyti į klausimą dėl įspėjimo išpirkimo");
-            return false;
-        }
+       // Validate toggles and related text
+if (!elements.pcInput.value.trim()) {
+    elements.pcInput.value = "Ne"; // Set default value to "Ne" if empty
+}
+
+if (!elements.ispInput.value.trim()) {
+    elements.ispInput.value = "Ne"; // Set default value to "Ne" if empty
+}
         
         // If all validations pass, show success message
         showNotification("success", "✅ Visi laukai užpildyti teisingai!");
