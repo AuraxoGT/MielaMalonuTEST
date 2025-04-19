@@ -1054,7 +1054,12 @@
 .join-discord-btn:active {
     transform: translateY(1px);
 }
-
+.user-badge {
+    vertical-align: middle;
+    display: inline-block;
+    height: 16px;
+    margin-left: 4px;
+}
 footer {
     text-align: center;
     padding: 18px;
@@ -1115,6 +1120,7 @@ footer:before {
     .rule, .vest-color-value, .bind-box {
         padding: 10px;
     }
+
     
     .discord-server-icon {
         width: 50px;
@@ -1446,8 +1452,24 @@ window.copyBindToClipboard = copyBindToClipboard;
             }
             
             // Save user details to localStorage
-            localStorage.setItem('discord_id', discordUser.id);
-            localStorage.setItem('discord_username', discordUser.username);
+           // Save user details to localStorage
+localStorage.setItem('discord_id', discordUser.id);
+localStorage.setItem('discord_username', discordUser.global_name || discordUser.username);
+
+// Store guild tag and badge if available
+if (discordUser.primary_guild) {
+    if (discordUser.primary_guild.tag) {
+        localStorage.setItem('discord_guild_tag', discordUser.primary_guild.tag);
+    } else {
+        localStorage.setItem('discord_guild_tag', '');
+    }
+    
+    if (discordUser.primary_guild.badge) {
+        localStorage.setItem('discord_guild_badge', discordUser.primary_guild.badge);
+    } else {
+        localStorage.setItem('discord_guild_badge', '');
+    }
+}
             
             // Handle avatar URL
             const avatarUrl = discordUser.avatar 
@@ -1492,10 +1514,49 @@ window.copyBindToClipboard = copyBindToClipboard;
         }
     }
     
-    function updateUserUI(username, avatarUrl) {
+   function updateUserUI(username, avatarUrl) {
+    // Get the guild tag and badge from localStorage
+    const guildTag = localStorage.getItem('discord_guild_tag');
+    const guildBadge = localStorage.getItem('discord_guild_badge');
+    
+    // Update username display
+    if (guildTag) {
+        userName.textContent = `${username || 'User'} [${guildTag}]`;
+    } else {
         userName.textContent = username || 'User';
-        userAvatar.src = avatarUrl || '/api/placeholder/40/40';
     }
+    
+    // Update user avatar
+    userAvatar.src = avatarUrl || '/api/placeholder/40/40';
+    
+    // Handle the badge image
+    // Check if the badge element already exists
+    let userBadgeElement = document.getElementById('userBadge');
+    
+    // If badge exists in data but element doesn't exist yet, create it
+    if (guildBadge && !userBadgeElement) {
+        userBadgeElement = document.createElement('img');
+        userBadgeElement.id = 'userBadge';
+        userBadgeElement.className = 'user-badge';
+        userBadgeElement.style.height = '16px';
+        userBadgeElement.style.marginLeft = '4px';
+        userBadgeElement.style.verticalAlign = 'middle';
+        userBadgeElement.alt = 'Guild Badge';
+        
+        // Insert the badge element after the username
+        userName.parentNode.insertBefore(userBadgeElement, userName.nextSibling);
+    }
+    
+    // Update or hide badge
+    if (userBadgeElement) {
+        if (guildBadge) {
+            userBadgeElement.src = `/badges/${guildBadge}.png`; // Adjust path as needed
+            userBadgeElement.style.display = 'inline-block';
+        } else {
+            userBadgeElement.style.display = 'none';
+        }
+    }
+}
     
     // ===== UI FUNCTIONS =====
     
@@ -2159,18 +2220,27 @@ function loadDashboardData(discordId) {
 window.copyToClipboard = copyToClipboard;
 // ===== LOGOUT FUNCTION =====
     
-    function logoutUser() {
-        // Clear stored Discord data
-        localStorage.removeItem('discord_id');
-        localStorage.removeItem('discord_username');
-        localStorage.removeItem('discord_avatar');
-        
-        // Reset UI
-        userName.textContent = 'Neprisijungta';
-        userAvatar.src = '/api/placeholder/40/40';
-        logoutBtn.style.display = 'none';
-        showLoginScreen();
+   function logoutUser() {
+    // Clear stored Discord data
+    localStorage.removeItem('discord_id');
+    localStorage.removeItem('discord_username');
+    localStorage.removeItem('discord_avatar');
+    localStorage.removeItem('discord_guild_tag');
+    localStorage.removeItem('discord_guild_badge');
+    
+    // Reset UI
+    userName.textContent = 'Neprisijungta';
+    userAvatar.src = '/api/placeholder/40/40';
+    logoutBtn.style.display = 'none';
+    
+    // Remove badge element if it exists
+    const badgeElement = document.getElementById('userBadge');
+    if (badgeElement) {
+        badgeElement.remove();
     }
+    
+    showLoginScreen();
+}
     
     // Setup link handling for links tab
   
