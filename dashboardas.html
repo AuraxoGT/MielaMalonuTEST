@@ -1073,27 +1073,34 @@
 .join-discord-btn:active {
     transform: translateY(1px);
 }
-/* Discord Tag Styling */
-.display-name {
-  color: #fff;
-  font-weight: 600;
-}
-
-.discord-tag {
-  color: #b9bbbe;
-  font-size: 0.85em;
-  font-weight: 400;
-  margin-left: 2px;
-  opacity: 0.6;
-}
-
-/* User info wrapper - add these styles to wherever you style the username container */
-.user-info {
+/* Align username with badge */
+.user-badge {
   display: flex;
   align-items: center;
-  gap: 8px;
+  height: 20px; /* Adjust based on your specific height */
 }
 
+.badge-icon {
+  vertical-align: middle;
+}
+
+.badge-text {
+  vertical-align: middle;
+  line-height: 20px; /* Match the height of the badge container */
+}
+
+.username-text {
+  vertical-align: middle;
+  line-height: 20px; /* Match the height of other elements */
+  display: inline-block;
+  margin-left: 4px; /* Add a small space between the badge and username */
+}
+
+/* Ensure entire username component is aligned */
+.display-name, .discord-tag {
+  line-height: 20px;
+  vertical-align: middle;
+}
 /* Avatar styling enhancements */
 #userAvatar {
   width: 32px;
