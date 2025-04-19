@@ -1076,7 +1076,46 @@
   display: inline-block;
   margin-left: 4px; /* Add a small space between the badge and username */
 }
+.primary-user-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  background-color: #2a2a2a;
+  border-radius: 4px;
+  padding: 0 8px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
 
+.badge-icon {
+  height: 16px;
+  width: 16px;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.badge-text {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  vertical-align: middle;
+  line-height: 24px;
+}
+
+.username-text {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  vertical-align: middle;
+  display: inline-block;
+}
+
+/* Container to ensure everything aligns properly */
+.user-container {
+  display: flex;
+  align-items: center;
+  height: 24px;
+}
 /* Ensure entire username component is aligned */
 .display-name, .discord-tag {
   line-height: 20px;
@@ -1577,7 +1616,8 @@ function updateUserUI(username, avatarUrl) {
     if (serverID && badgeHash) {
     // Create badge with clan icon with tag first, then username
     userName.innerHTML = `
-        <span class="user-badge">
+<div class="user-container">
+        <span class="primary-user-badge">
             <img class="badge-icon" src="https://cdn.discordapp.com/clan-badges/${serverID}/${badgeHash}.png?size=16" 
                  onerror="this.onerror=null; this.src='/api/placeholder/16/16';" alt="badge">
             
