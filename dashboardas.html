@@ -1592,6 +1592,7 @@ function updateUserUI(username, avatarUrl) {
             <span class="user-badge">
                 <img class="badge-icon" src="https://cdn.discordapp.com/clan-badges/${serverID}/${badgeHash}.png?size=16" 
                      onerror="this.onerror=null; this.src='/api/placeholder/16/16';" alt="badge">
+                <span class="discord-tag">#${guildTag}</span>
                 <span class="badge-text">${username || 'User'}</span>
             </span>
             ${guildTag ? `<span class="discord-tag">#${guildTag}</span>` : ''}
