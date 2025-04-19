@@ -1054,6 +1054,54 @@
 .join-discord-btn:active {
     transform: translateY(1px);
 }
+/* Discord Tag Styling */
+.display-name {
+  color: #fff;
+  font-weight: 600;
+}
+
+.discord-tag {
+  color: #b9bbbe;
+  font-size: 0.85em;
+  font-weight: 400;
+  margin-left: 2px;
+  opacity: 0.6;
+}
+
+/* User info wrapper - add these styles to wherever you style the username container */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Avatar styling enhancements */
+#userAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Status styling for logged in/out states */
+.login-status {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.logged-in {
+  background-color: rgba(59, 165, 92, 0.1);
+  color: #3ba55c;
+}
+
+.logged-out {
+  background-color: rgba(237, 66, 69, 0.1);
+  color: #ed4245;
+}
 .user-badge {
     vertical-align: middle;
     display: inline-block;
@@ -1434,59 +1482,57 @@ function copyBindToClipboard(element, text) {
 // Add this as a window function to be callable from HTML
 window.copyBindToClipboard = copyBindToClipboard;
     async function handleDiscordAuthResponse() {
-        try {
-            // Parse the access token from the URL hash
-            const hash = window.location.hash.substring(1);
-            const params = new URLSearchParams(hash);
-            const accessToken = params.get('access_token');
-            
-            if (!accessToken) {
-                throw new Error('No access token found');
-            }
-            
-            // Fetch user profile from Discord API
-            const discordUser = await fetchDiscordUserProfile(accessToken);
-            
-            if (!discordUser || !discordUser.id) {
-                throw new Error('Failed to get Discord user profile');
-            }
-            
-            // Save user details to localStorage
-           // Save user details to localStorage
-localStorage.setItem('discord_id', discordUser.id);
-localStorage.setItem('discord_username', discordUser.global_name || discordUser.username);
+    try {
+        // Parse the access token from the URL hash
+        const hash = window.location.hash.substring(1);
+        const params = new URLSearchParams(hash);
+        const accessToken = params.get('access_token');
+        
+        if (!accessToken) {
+            throw new Error('No access token found');
+        }
+        
+        // Fetch user profile from Discord API
+        const discordUser = await fetchDiscordUserProfile(accessToken);
+        
+        if (!discordUser || !discordUser.id) {
+            throw new Error('Failed to get Discord user profile');
+        }
+        
+        // Save user details to localStorage - use global_name (display name) if available
+        localStorage.setItem('discord_id', discordUser.id);
+        localStorage.setItem('discord_username', discordUser.global_name || discordUser.username);
 
-// Store guild tag and badge if available
-if (discordUser.primary_guild) {
-    if (discordUser.primary_guild.tag) {
-        localStorage.setItem('discord_guild_tag', discordUser.primary_guild.tag);
-    } else {
-        localStorage.setItem('discord_guild_tag', '');
-    }
-    
-    if (discordUser.primary_guild.badge) {
-        localStorage.setItem('discord_guild_badge', discordUser.primary_guild.badge);
-    } else {
-        localStorage.setItem('discord_guild_badge', '');
+        // Store guild tag if available, but not badge
+        if (discordUser.primary_guild && discordUser.primary_guild.tag) {
+            localStorage.setItem('discord_guild_tag', discordUser.primary_guild.tag);
+        } else {
+            localStorage.setItem('discord_guild_tag', discordUser.discriminator || '0000');
+        }
+        
+        // Handle avatar URL
+        const avatarUrl = discordUser.avatar 
+            ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png` 
+            : '/api/placeholder/40/40';
+        localStorage.setItem('discord_avatar', avatarUrl);
+        
+        // Update UI with display name if available
+        updateUserUI(discordUser.global_name || discordUser.username, avatarUrl);
+        hideLoginScreen();
+        
+        // Load dashboard data using Discord ID
+        loadDashboardData(discordUser.id);
+        logoutBtn.style.display = 'inline-block';
+        
+        // Clean URL after successful auth
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+    } catch (err) {
+        console.error('Error during Discord authentication:', err);
+        showLoginError('Authentication failed. Please try again.');
+        showLoginScreen();
     }
 }
-            
-            // Handle avatar URL
-            const avatarUrl = discordUser.avatar 
-                ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png` 
-                : '/api/placeholder/40/40';
-            localStorage.setItem('discord_avatar', avatarUrl);
-            
-            // Update UI
-            updateUserUI(discordUser.username, avatarUrl);
-            hideLoginScreen();
-            
-            // Load dashboard data using Discord ID
-            loadDashboardData(discordUser.id);
-            logoutBtn.style.display = 'inline-block';
-            
-            // Clean URL after successful auth
-            window.history.replaceState({}, document.title, window.location.pathname);
             
         } catch (err) {
             console.error('Error during Discord authentication:', err);
@@ -1514,50 +1560,24 @@ if (discordUser.primary_guild) {
         }
     }
     
-   function updateUserUI(username, avatarUrl) {
-    // Get the guild tag and badge from localStorage
+ function updateUserUI(username, avatarUrl) {
+    // Get the guild tag from localStorage
     const guildTag = localStorage.getItem('discord_guild_tag');
-    const guildBadge = localStorage.getItem('discord_guild_badge');
     
-    // Update username display
+    // Update display name
     if (guildTag) {
-        userName.textContent = `${username || 'User'} [${guildTag}]`;
+        // Format with Discord-style tag
+        userName.innerHTML = `
+            <span class="display-name">${username || 'User'}</span>
+            <span class="discord-tag">#${guildTag}</span>
+        `;
     } else {
         userName.textContent = username || 'User';
     }
     
     // Update user avatar
     userAvatar.src = avatarUrl || '/api/placeholder/40/40';
-    
-    // Handle the badge image
-    // Check if the badge element already exists
-    let userBadgeElement = document.getElementById('userBadge');
-    
-    // If badge exists in data but element doesn't exist yet, create it
-    if (guildBadge && !userBadgeElement) {
-        userBadgeElement = document.createElement('img');
-        userBadgeElement.id = 'userBadge';
-        userBadgeElement.className = 'user-badge';
-        userBadgeElement.style.height = '16px';
-        userBadgeElement.style.marginLeft = '4px';
-        userBadgeElement.style.verticalAlign = 'middle';
-        userBadgeElement.alt = 'Guild Badge';
-        
-        // Insert the badge element after the username
-        userName.parentNode.insertBefore(userBadgeElement, userName.nextSibling);
-    }
-    
-    // Update or hide badge
-    if (userBadgeElement) {
-        if (guildBadge) {
-            userBadgeElement.src = `/badges/${guildBadge}.png`; // Adjust path as needed
-            userBadgeElement.style.display = 'inline-block';
-        } else {
-            userBadgeElement.style.display = 'none';
-        }
-    }
-}
-    
+} 
     // ===== UI FUNCTIONS =====
     
     function switchTab(selectedButton) {
@@ -2220,24 +2240,17 @@ function loadDashboardData(discordId) {
 window.copyToClipboard = copyToClipboard;
 // ===== LOGOUT FUNCTION =====
     
-   function logoutUser() {
+ function logoutUser() {
     // Clear stored Discord data
     localStorage.removeItem('discord_id');
     localStorage.removeItem('discord_username');
     localStorage.removeItem('discord_avatar');
     localStorage.removeItem('discord_guild_tag');
-    localStorage.removeItem('discord_guild_badge');
     
     // Reset UI
     userName.textContent = 'Neprisijungta';
     userAvatar.src = '/api/placeholder/40/40';
     logoutBtn.style.display = 'none';
-    
-    // Remove badge element if it exists
-    const badgeElement = document.getElementById('userBadge');
-    if (badgeElement) {
-        badgeElement.remove();
-    }
     
     showLoginScreen();
 }
