@@ -466,7 +466,26 @@
         .links-name {
             flex: 1;
         }
+.user-badge {
+    display: inline-flex;
+    align-items: center;
+    background-color: #222;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    margin-right: 4px;
+}
 
+.badge-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+}
+
+.badge-text {
+    color: white;
+    letter-spacing: 0.5px;
+}
         footer {
             text-align: center;
             padding: 18px;
@@ -1504,11 +1523,11 @@ window.copyBindToClipboard = copyBindToClipboard;
         localStorage.setItem('discord_username', discordUser.global_name || discordUser.username);
 
         // Store guild tag if available, but not badge
-        if (discordUser.primary_guild && discordUser.primary_guild.tag) {
-            localStorage.setItem('discord_guild_tag', discordUser.primary_guild.tag);
-        } else {
-            localStorage.setItem('discord_guild_tag', discordUser.discriminator || '0000');
-        }
+       // Inside your handleDiscordAuthResponse function, after fetching the Discord profile:
+if (discordUser.primary_guild) {
+    localStorage.setItem('discord_server_id', discordUser.primary_guild.id);
+    localStorage.setItem('discord_badge_hash', discordUser.primary_guild.badge_hash);
+}
         
         // Handle avatar URL
         const avatarUrl = discordUser.avatar 
@@ -1555,24 +1574,41 @@ window.copyBindToClipboard = copyBindToClipboard;
         }
     }
     
- function updateUserUI(username, avatarUrl) {
+function updateUserUI(username, avatarUrl) {
     // Get the guild tag from localStorage
     const guildTag = localStorage.getItem('discord_guild_tag');
     
-    // Update display name
-    if (guildTag) {
-        // Format with Discord-style tag
+    // Get Discord server ID and clan badge hash (you need to store these values)
+    // This would come from your Discord API response
+    const serverID = localStorage.getItem('discord_server_id'); // You need to save this when fetching user data
+    const badgeHash = localStorage.getItem('discord_badge_hash'); // You need to save this when fetching user data
+    
+    // Update display name with badge
+    if (serverID && badgeHash) {
+        // Create badge with clan icon
         userName.innerHTML = `
-            <span class="display-name">${username || 'User'}</span>
-            <span class="discord-tag">#${guildTag}</span>
+            <span class="user-badge">
+                <img class="badge-icon" src="https://cdn.discordapp.com/clan-badges/clan-${serverID}/${badgeHash}.png?size=16" 
+                     onerror="this.onerror=null; this.src='/api/placeholder/16/16';" alt="badge">
+                <span class="badge-text">${username || 'User'}</span>
+            </span>
+            ${guildTag ? `<span class="discord-tag">#${guildTag}</span>` : ''}
         `;
     } else {
-        userName.textContent = username || 'User';
+        // No badge available, show just the username
+        if (guildTag) {
+            userName.innerHTML = `
+                <span class="display-name">${username || 'User'}</span>
+                <span class="discord-tag">#${guildTag}</span>
+            `;
+        } else {
+            userName.textContent = username || 'User';
+        }
     }
     
     // Update user avatar
     userAvatar.src = avatarUrl || '/api/placeholder/40/40';
-} 
+}
     // ===== UI FUNCTIONS =====
     
     function switchTab(selectedButton) {
