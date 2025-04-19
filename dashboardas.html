@@ -1534,12 +1534,7 @@ window.copyBindToClipboard = copyBindToClipboard;
     }
 }
             
-        } catch (err) {
-            console.error('Error during Discord authentication:', err);
-            showLoginError('Authentication failed. Please try again.');
-            showLoginScreen();
-        }
-    }
+      
     
     async function fetchDiscordUserProfile(accessToken) {
         try {
