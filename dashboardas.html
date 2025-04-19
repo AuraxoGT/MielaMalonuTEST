@@ -1525,8 +1525,8 @@ window.copyBindToClipboard = copyBindToClipboard;
         // Store guild tag if available, but not badge
        // Inside your handleDiscordAuthResponse function, after fetching the Discord profile:
 if (discordUser.primary_guild) {
-    localStorage.setItem('discord_server_id', discordUser.primary_guild.id);
-    localStorage.setItem('discord_badge_hash', discordUser.primary_guild.badge_hash);
+    localStorage.setItem('discord_server_id', discordUser.primary_guild.identity_guild_id);
+    localStorage.setItem('discord_badge_hash', discordUser.primary_guild.badge);
 }
         
         // Handle avatar URL
