@@ -1587,16 +1587,17 @@ function updateUserUI(username, avatarUrl) {
     
     // Update display name with badge
     if (serverID && badgeHash) {
-        // Create badge with clan icon
-        userName.innerHTML = `
-            <span class="user-badge">
-                <img class="badge-icon" src="https://cdn.discordapp.com/clan-badges/${serverID}/${badgeHash}.png?size=16" 
-                     onerror="this.onerror=null; this.src='/api/placeholder/16/16';" alt="badge">
-                <span class="discord-tag">#${guildTag}</span>
-                <span class="badge-text">${username || 'User'}</span>
-            </span>
-            ${guildTag ? `<span class="discord-tag">#${guildTag}</span>` : ''}
-        `;
+    // Create badge with clan icon with tag first, then username
+    userName.innerHTML = `
+        <span class="user-badge">
+            <img class="badge-icon" src="https://cdn.discordapp.com/clan-badges/${serverID}/${badgeHash}.png?size=16" 
+                 onerror="this.onerror=null; this.src='/api/placeholder/16/16';" alt="badge">
+            
+            <span class="badge-text">${guildTag ? `#${guildTag}` : 'Tag'}</span>
+        </span>
+        <span class="username-text">${username || 'User'}</span>
+    `;
+}
     } else {
         // No badge available, show just the username
         if (guildTag) {
