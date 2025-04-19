@@ -1527,6 +1527,8 @@ window.copyBindToClipboard = copyBindToClipboard;
 if (discordUser.primary_guild) {
     localStorage.setItem('discord_server_id', discordUser.primary_guild.identity_guild_id);
     localStorage.setItem('discord_badge_hash', discordUser.primary_guild.badge);
+    localStorage.setItem('discord_guild_tag', discordUser.primary_guild.tag);;
+      
 }
         
         // Handle avatar URL
